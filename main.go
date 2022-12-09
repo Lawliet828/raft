@@ -3,7 +3,6 @@ package main
 import (
 	"fmt"
 	"gframework/log"
-	"net"
 	"net/http"
 )
 
@@ -32,18 +31,10 @@ func main() {
 	}
 	log.Init(logConf)
 
-	var l net.Listener
-	var err error
-	l, err = net.Listen("tcp", st.opts.httpAddress)
-	if err != nil {
-		log.Panic(fmt.Sprintf("listen %s failed: %s", st.opts.httpAddress, err))
-	}
-	log.Infof("http server listen:%s", l.Addr())
-
 	httpServer := NewHttpServer(ctx)
 	st.hs = httpServer
 	go func() {
-		http.Serve(l, httpServer.mux)
+		http.ListenAndServe(st.opts.httpAddress, nil)
 	}()
 
 	raft, err := newRaftNode(st.opts, ctx)

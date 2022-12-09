@@ -18,21 +18,18 @@ const (
 
 type HttpServer struct {
 	ctx         *stCachedContext
-	mux         *http.ServeMux
 	enableWrite int32
 }
 
 func NewHttpServer(ctx *stCachedContext) *HttpServer {
-	mux := http.NewServeMux()
 	s := &HttpServer{
 		ctx:         ctx,
-		mux:         mux,
 		enableWrite: EnableWriteFalse,
 	}
 
-	mux.HandleFunc("/set", s.doSet)
-	mux.HandleFunc("/get", s.doGet)
-	mux.HandleFunc("/join", s.doJoin)
+	http.HandleFunc("/set", s.doSet)
+	http.HandleFunc("/get", s.doGet)
+	http.HandleFunc("/join", s.doJoin)
 	return s
 }
 
