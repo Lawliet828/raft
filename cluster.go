@@ -3,7 +3,6 @@ package main
 import (
 	"errors"
 	"fmt"
-	"github.com/hashicorp/go-hclog"
 	"github.com/hashicorp/raft"
 	raftboltdb "github.com/hashicorp/raft-boltdb"
 	"io/ioutil"
@@ -35,7 +34,6 @@ func newRaftTransport(opts *Options) (*raft.NetworkTransport, error) {
 func newRaftNode(opts *Options, ctx *stCachedContext) (*raftNodeInfo, error) {
 	raftConfig := raft.DefaultConfig()
 	raftConfig.LocalID = raft.ServerID(opts.raftTCPAddress)
-	raftConfig.Logger = hclog.Default()
 	raftConfig.SnapshotInterval = 20 * time.Second
 	raftConfig.SnapshotThreshold = 2
 	leaderNotifyCh := make(chan bool, 1)
@@ -46,7 +44,7 @@ func newRaftNode(opts *Options, ctx *stCachedContext) (*raftNodeInfo, error) {
 		return nil, err
 	}
 
-	if err := os.MkdirAll(opts.dataDir, 0700); err != nil {
+	if err = os.MkdirAll(opts.dataDir, 0700); err != nil {
 		return nil, err
 	}
 
