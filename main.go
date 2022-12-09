@@ -9,14 +9,12 @@ import (
 type CachedContext struct {
 	hs   *HttpServer
 	opts *Options
-	cm   *CacheManager
 	raft *raftNodeInfo
 }
 
 func main() {
 	ctx := &CachedContext{
 		opts: NewOptions(),
-		cm:   NewCacheManager(),
 	}
 
 	logConf := log.Config{
@@ -25,12 +23,6 @@ func main() {
 		MaxSize: 1,
 	}
 	log.Init(logConf)
-
-	httpServer := NewHttpServer(ctx)
-	ctx.hs = httpServer
-	go func() {
-		http.ListenAndServe(ctx.opts.httpAddress, nil)
-	}()
 
 	raft, err := newRaftNode(ctx.opts, ctx)
 	if err != nil {
@@ -44,6 +36,12 @@ func main() {
 			log.Panic(fmt.Sprintf("join raft cluster failed:%v", err))
 		}
 	}
+
+	httpServer := NewHttpServer(ctx)
+	ctx.hs = httpServer
+	go func() {
+		http.ListenAndServe(ctx.opts.httpAddress, nil)
+	}()
 
 	// monitor leadership
 	for {

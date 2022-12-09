@@ -12,8 +12,9 @@ type CacheManager struct {
 }
 
 func NewCacheManager() *CacheManager {
-	cm := &CacheManager{}
-	cm.data = make(map[string]string)
+	cm := &CacheManager{
+		data: make(map[string]string),
+	}
 	return cm
 }
 

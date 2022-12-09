@@ -49,7 +49,7 @@ func newRaftNode(opts *Options, ctx *CachedContext) (*raftNodeInfo, error) {
 	}
 
 	fsm := &FSM{
-		ctx: ctx,
+		cm: NewCacheManager(),
 	}
 	snapshotStore, err := raft.NewFileSnapshotStore(opts.dataDir, 1, os.Stderr)
 	if err != nil {
