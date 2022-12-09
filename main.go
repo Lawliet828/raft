@@ -24,7 +24,7 @@ func main() {
 	}
 	log.Init(logConf)
 
-	raft, err := newRaftNode(ctx.opts, ctx)
+	raft, err := newRaftNode(ctx.opts)
 	if err != nil {
 		log.Panic(fmt.Sprintf("new raft node failed:%v", err))
 	}

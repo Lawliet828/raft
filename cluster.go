@@ -31,7 +31,7 @@ func newRaftTransport(opts *Options) (*raft.NetworkTransport, error) {
 	return transport, nil
 }
 
-func newRaftNode(opts *Options, ctx *CachedContext) (*raftNodeInfo, error) {
+func newRaftNode(opts *Options) (*raftNodeInfo, error) {
 	raftConfig := raft.DefaultConfig()
 	raftConfig.LocalID = raft.ServerID(opts.raftTCPAddress)
 	raftConfig.SnapshotInterval = 20 * time.Second
@@ -48,9 +48,7 @@ func newRaftNode(opts *Options, ctx *CachedContext) (*raftNodeInfo, error) {
 		return nil, err
 	}
 
-	fsm := &FSM{
-		cm: NewCacheManager(),
-	}
+	fsm := NewFSM()
 	snapshotStore, err := raft.NewFileSnapshotStore(opts.dataDir, 1, os.Stderr)
 	if err != nil {
 		return nil, err

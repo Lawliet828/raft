@@ -17,6 +17,13 @@ type logEntryData struct {
 	Value string
 }
 
+func NewFSM() *FSM {
+	fsm := &FSM{
+		cm: NewCacheManager(),
+	}
+	return fsm
+}
+
 // Apply applies a Raft log entry to the key-value store.
 func (f *FSM) Apply(logEntry *raft.Log) interface{} {
 	e := logEntryData{}
