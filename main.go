@@ -9,7 +9,7 @@ import (
 type stCached struct {
 	hs   *HttpServer
 	opts *Options
-	cm   *cacheManager
+	cm   *CacheManager
 	raft *raftNodeInfo
 }
 

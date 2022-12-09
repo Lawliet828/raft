@@ -5,7 +5,7 @@ import (
 )
 
 type snapshot struct {
-	cm *cacheManager
+	cm *CacheManager
 }
 
 // Persist saves the FSM snapshot out to the given sink.
@@ -28,4 +28,4 @@ func (s *snapshot) Persist(sink raft.SnapshotSink) error {
 	return nil
 }
 
-func (f *snapshot) Release() {}
+func (s *snapshot) Release() {}
