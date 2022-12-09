@@ -16,15 +16,15 @@ const (
 	EnableWriteFalse = int32(0)
 )
 
-type httpServer struct {
+type HttpServer struct {
 	ctx         *stCachedContext
 	mux         *http.ServeMux
 	enableWrite int32
 }
 
-func NewHttpServer(ctx *stCachedContext) *httpServer {
+func NewHttpServer(ctx *stCachedContext) *HttpServer {
 	mux := http.NewServeMux()
-	s := &httpServer{
+	s := &HttpServer{
 		ctx:         ctx,
 		mux:         mux,
 		enableWrite: EnableWriteFalse,
@@ -36,11 +36,11 @@ func NewHttpServer(ctx *stCachedContext) *httpServer {
 	return s
 }
 
-func (h *httpServer) checkWritePermission() bool {
+func (h *HttpServer) checkWritePermission() bool {
 	return atomic.LoadInt32(&h.enableWrite) == EnableWriteTrue
 }
 
-func (h *httpServer) setWriteFlag(flag bool) {
+func (h *HttpServer) setWriteFlag(flag bool) {
 	if flag {
 		atomic.StoreInt32(&h.enableWrite, EnableWriteTrue)
 	} else {
@@ -48,7 +48,7 @@ func (h *httpServer) setWriteFlag(flag bool) {
 	}
 }
 
-func (h *httpServer) doGet(w http.ResponseWriter, r *http.Request) {
+func (h *HttpServer) doGet(w http.ResponseWriter, r *http.Request) {
 	vars := r.URL.Query()
 
 	key := vars.Get("key")
@@ -63,7 +63,7 @@ func (h *httpServer) doGet(w http.ResponseWriter, r *http.Request) {
 }
 
 // doSet saves data to cache, only raft master node provides this api
-func (h *httpServer) doSet(w http.ResponseWriter, r *http.Request) {
+func (h *HttpServer) doSet(w http.ResponseWriter, r *http.Request) {
 	if !h.checkWritePermission() {
 		fmt.Fprint(w, "write method not allowed\n")
 		return
@@ -97,7 +97,7 @@ func (h *httpServer) doSet(w http.ResponseWriter, r *http.Request) {
 }
 
 // doJoin handles joining cluster request
-func (h *httpServer) doJoin(w http.ResponseWriter, r *http.Request) {
+func (h *HttpServer) doJoin(w http.ResponseWriter, r *http.Request) {
 	vars := r.URL.Query()
 
 	peerAddress := vars.Get("peerAddress")
