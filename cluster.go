@@ -31,7 +31,7 @@ func newRaftTransport(opts *Options) (*raft.NetworkTransport, error) {
 	return transport, nil
 }
 
-func newRaftNode(opts *Options, ctx *stCachedContext) (*raftNodeInfo, error) {
+func newRaftNode(opts *Options, ctx *CachedContext) (*raftNodeInfo, error) {
 	raftConfig := raft.DefaultConfig()
 	raftConfig.LocalID = raft.ServerID(opts.raftTCPAddress)
 	raftConfig.SnapshotInterval = 20 * time.Second

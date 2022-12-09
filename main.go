@@ -13,8 +13,8 @@ type stCached struct {
 	raft *raftNodeInfo
 }
 
-type stCachedContext struct {
-	st *stCached
+type CachedContext struct {
+	*stCached
 }
 
 func main() {
@@ -22,7 +22,7 @@ func main() {
 		opts: NewOptions(),
 		cm:   NewCacheManager(),
 	}
-	ctx := &stCachedContext{st}
+	ctx := &CachedContext{st}
 
 	logConf := log.Config{
 		Path:    "./",
@@ -32,19 +32,19 @@ func main() {
 	log.Init(logConf)
 
 	httpServer := NewHttpServer(ctx)
-	st.hs = httpServer
+	ctx.hs = httpServer
 	go func() {
-		http.ListenAndServe(st.opts.httpAddress, nil)
+		http.ListenAndServe(ctx.opts.httpAddress, nil)
 	}()
 
-	raft, err := newRaftNode(st.opts, ctx)
+	raft, err := newRaftNode(ctx.opts, ctx)
 	if err != nil {
 		log.Panic(fmt.Sprintf("new raft node failed:%v", err))
 	}
-	st.raft = raft
+	ctx.raft = raft
 
-	if st.opts.joinAddress != "" {
-		err = joinRaftCluster(st.opts)
+	if ctx.opts.joinAddress != "" {
+		err = joinRaftCluster(ctx.opts)
 		if err != nil {
 			log.Panic(fmt.Sprintf("join raft cluster failed:%v", err))
 		}
@@ -53,13 +53,13 @@ func main() {
 	// monitor leadership
 	for {
 		select {
-		case leader := <-st.raft.leaderNotifyCh:
+		case leader := <-ctx.raft.leaderNotifyCh:
 			if leader {
 				log.Info("become leader, enable write api")
-				st.hs.setWriteFlag(true)
+				ctx.hs.setWriteFlag(true)
 			} else {
 				log.Info("become follower, close write api")
-				st.hs.setWriteFlag(false)
+				ctx.hs.setWriteFlag(false)
 			}
 		}
 	}

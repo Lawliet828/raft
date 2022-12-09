@@ -17,11 +17,11 @@ const (
 )
 
 type HttpServer struct {
-	ctx         *stCachedContext
+	ctx         *CachedContext
 	enableWrite int32
 }
 
-func NewHttpServer(ctx *stCachedContext) *HttpServer {
+func NewHttpServer(ctx *CachedContext) *HttpServer {
 	s := &HttpServer{
 		ctx:         ctx,
 		enableWrite: EnableWriteFalse,
@@ -55,7 +55,7 @@ func (h *HttpServer) doGet(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	ret := h.ctx.st.cm.Get(key)
+	ret := h.ctx.cm.Get(key)
 	fmt.Fprintf(w, "%s\n", ret)
 }
 
@@ -83,7 +83,7 @@ func (h *HttpServer) doSet(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	applyFuture := h.ctx.st.raft.raft.Apply(eventBytes, 5*time.Second)
+	applyFuture := h.ctx.raft.raft.Apply(eventBytes, 5*time.Second)
 	if err := applyFuture.Error(); err != nil {
 		log.Errorf("raft.Apply failed:%v", err)
 		fmt.Fprint(w, "internal error\n")
@@ -103,7 +103,7 @@ func (h *HttpServer) doJoin(w http.ResponseWriter, r *http.Request) {
 		fmt.Fprint(w, "invalid peerAddress\n")
 		return
 	}
-	addPeerFuture := h.ctx.st.raft.raft.AddVoter(raft.ServerID(peerAddress), raft.ServerAddress(peerAddress), 0, 0)
+	addPeerFuture := h.ctx.raft.raft.AddVoter(raft.ServerID(peerAddress), raft.ServerAddress(peerAddress), 0, 0)
 	if err := addPeerFuture.Error(); err != nil {
 		log.Errorf("Error joining peer to raft, peer address:%s, err:%v, code:%d", peerAddress, err, http.StatusInternalServerError)
 		fmt.Fprint(w, "internal error\n")
