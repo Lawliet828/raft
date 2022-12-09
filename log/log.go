@@ -2,6 +2,7 @@ package log
 
 import (
 	"io"
+	"log"
 	"os"
 
 	"go.uber.org/zap"
@@ -16,7 +17,10 @@ type Config struct {
 	MaxSize  int
 }
 
-var sugarLogger *zap.SugaredLogger
+var (
+	logger      *zap.Logger
+	sugarLogger *zap.SugaredLogger
+)
 
 func levelToZap(level string) zapcore.Level {
 	switch level {
@@ -44,7 +48,7 @@ func Init(conf Config) {
 	encoder := getEncoder()
 	core := zapcore.NewCore(encoder, writeSyncer, levelToZap(conf.Level))
 
-	logger := zap.New(core, zap.AddCaller(), zap.AddCallerSkip(1))
+	logger = zap.New(core, zap.AddCaller(), zap.AddCallerSkip(1))
 	sugarLogger = logger.Sugar()
 }
 
@@ -67,50 +71,66 @@ func getLogWriter(conf Config) zapcore.WriteSyncer {
 	return zapcore.AddSync(ws)
 }
 
+func GetStdLog() *log.Logger {
+	return zap.NewStdLog(logger)
+}
+
 func Debug(args ...interface{}) {
 	sugarLogger.Debug(args...)
+	defer sugarLogger.Sync()
 }
 
 func Debugf(template string, args ...interface{}) {
 	sugarLogger.Debugf(template, args...)
+	defer sugarLogger.Sync()
 }
 
 func Info(args ...interface{}) {
 	sugarLogger.Info(args...)
+	defer sugarLogger.Sync()
 }
 
 func Infof(template string, args ...interface{}) {
 	sugarLogger.Infof(template, args...)
+	defer sugarLogger.Sync()
 }
 
 func Warn(args ...interface{}) {
 	sugarLogger.Warn(args...)
+	defer sugarLogger.Sync()
 }
 
 func Warnf(template string, args ...interface{}) {
 	sugarLogger.Warnf(template, args...)
+	defer sugarLogger.Sync()
 }
 
 func Error(args ...interface{}) {
 	sugarLogger.Error(args...)
+	defer sugarLogger.Sync()
 }
 
 func Errorf(template string, args ...interface{}) {
 	sugarLogger.Errorf(template, args...)
+	defer sugarLogger.Sync()
 }
 
 func DPanic(args ...interface{}) {
 	sugarLogger.DPanic(args...)
+	defer sugarLogger.Sync()
 }
 
 func DPanicf(template string, args ...interface{}) {
 	sugarLogger.DPanicf(template, args...)
+	defer sugarLogger.Sync()
 }
 
 func Panic(args ...interface{}) {
 	sugarLogger.Panic(args...)
+	defer sugarLogger.Sync()
 }
 
 func Panicf(template string, args ...interface{}) {
 	sugarLogger.Panicf(template, args...)
+	defer sugarLogger.Sync()
 }
