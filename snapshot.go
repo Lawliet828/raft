@@ -16,12 +16,12 @@ func (s *snapshot) Persist(sink raft.SnapshotSink) error {
 		return err
 	}
 
-	if _, err := sink.Write(snapshotBytes); err != nil {
+	if _, err = sink.Write(snapshotBytes); err != nil {
 		sink.Cancel()
 		return err
 	}
 
-	if err := sink.Close(); err != nil {
+	if err = sink.Close(); err != nil {
 		sink.Cancel()
 		return err
 	}

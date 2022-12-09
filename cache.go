@@ -18,38 +18,38 @@ func NewCacheManager() *CacheManager {
 	return cm
 }
 
-func (c *CacheManager) Get(key string) string {
-	c.RLock()
-	ret := c.data[key]
-	c.RUnlock()
+func (cm *CacheManager) Get(key string) string {
+	cm.RLock()
+	ret := cm.data[key]
+	cm.RUnlock()
 	return ret
 }
 
-func (c *CacheManager) Set(key string, value string) error {
-	c.Lock()
-	defer c.Unlock()
-	c.data[key] = value
+func (cm *CacheManager) Set(key string, value string) error {
+	cm.Lock()
+	defer cm.Unlock()
+	cm.data[key] = value
 	return nil
 }
 
 // Marshal serializes cache data
-func (c *CacheManager) Marshal() ([]byte, error) {
-	c.RLock()
-	defer c.RUnlock()
-	dataBytes, err := json.Marshal(c.data)
+func (cm *CacheManager) Marshal() ([]byte, error) {
+	cm.RLock()
+	defer cm.RUnlock()
+	dataBytes, err := json.Marshal(cm.data)
 	return dataBytes, err
 }
 
 // UnMarshal deserializes cache data
-func (c *CacheManager) UnMarshal(serialized io.ReadCloser) error {
+func (cm *CacheManager) UnMarshal(serialized io.ReadCloser) error {
 	var newData map[string]string
 	if err := json.NewDecoder(serialized).Decode(&newData); err != nil {
 		return err
 	}
 
-	c.Lock()
-	defer c.Unlock()
-	c.data = newData
+	cm.Lock()
+	defer cm.Unlock()
+	cm.data = newData
 
 	return nil
 }
