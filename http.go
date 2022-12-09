@@ -22,22 +22,22 @@ type HttpServer struct {
 }
 
 func NewHttpServer(ctx *CachedContext) *HttpServer {
-	s := &HttpServer{
+	server := &HttpServer{
 		raft:        ctx.raft,
 		enableWrite: EnableWriteFalse,
 	}
 
-	http.HandleFunc("/set", s.doSet)
-	http.HandleFunc("/get", s.doGet)
-	http.HandleFunc("/join", s.doJoin)
-	return s
+	http.HandleFunc("/set", server.doSet)
+	http.HandleFunc("/get", server.doGet)
+	http.HandleFunc("/join", server.doJoin)
+	return server
 }
 
-func (h *HttpServer) checkWritePermission() bool {
+func (h *HttpServer) checkPermission() bool {
 	return atomic.LoadInt32(&h.enableWrite) == EnableWriteTrue
 }
 
-func (h *HttpServer) setWriteFlag(flag bool) {
+func (h *HttpServer) setLeaderFlag(flag bool) {
 	if flag {
 		atomic.StoreInt32(&h.enableWrite, EnableWriteTrue)
 	} else {
@@ -61,7 +61,7 @@ func (h *HttpServer) doGet(w http.ResponseWriter, r *http.Request) {
 
 // doSet saves data to cache, only raft master node provides this api
 func (h *HttpServer) doSet(w http.ResponseWriter, r *http.Request) {
-	if !h.checkWritePermission() {
+	if !h.checkPermission() {
 		fmt.Fprint(w, "write method not allowed\n")
 		return
 	}

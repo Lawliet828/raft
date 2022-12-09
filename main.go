@@ -49,10 +49,10 @@ func main() {
 		case leader := <-ctx.raft.leaderNotifyCh:
 			if leader {
 				log.Info("become leader, enable write api")
-				ctx.hs.setWriteFlag(true)
+				ctx.hs.setLeaderFlag(true)
 			} else {
 				log.Info("become follower, close write api")
-				ctx.hs.setWriteFlag(false)
+				ctx.hs.setLeaderFlag(false)
 			}
 		}
 	}
