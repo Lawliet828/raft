@@ -19,18 +19,6 @@ type raftNodeInfo struct {
 	leaderNotifyCh chan bool
 }
 
-func newRaftTransport(opts *Options) (*raft.NetworkTransport, error) {
-	address, err := net.ResolveTCPAddr("tcp", opts.raftTCPAddress)
-	if err != nil {
-		return nil, err
-	}
-	transport, err := raft.NewTCPTransport(address.String(), address, 3, 10*time.Second, os.Stderr)
-	if err != nil {
-		return nil, err
-	}
-	return transport, nil
-}
-
 func newRaftNode(opts *Options) (*raftNodeInfo, error) {
 	raftConfig := raft.DefaultConfig()
 	raftConfig.LocalID = raft.ServerID(opts.raftTCPAddress)
@@ -39,7 +27,11 @@ func newRaftNode(opts *Options) (*raftNodeInfo, error) {
 	leaderNotifyCh := make(chan bool, 1)
 	raftConfig.NotifyCh = leaderNotifyCh
 
-	transport, err := newRaftTransport(opts)
+	address, err := net.ResolveTCPAddr("tcp", opts.raftTCPAddress)
+	if err != nil {
+		return nil, err
+	}
+	transport, err := raft.NewTCPTransport(address.String(), address, 3, 5*time.Second, os.Stderr)
 	if err != nil {
 		return nil, err
 	}
@@ -47,28 +39,29 @@ func newRaftNode(opts *Options) (*raftNodeInfo, error) {
 	if err = os.MkdirAll(opts.dataDir, 0700); err != nil {
 		return nil, err
 	}
-
-	fsm := NewFSM()
 	snapshotStore, err := raft.NewFileSnapshotStore(opts.dataDir, 1, os.Stderr)
 	if err != nil {
 		return nil, err
 	}
 
-	logStore, err := raftboltdb.NewBoltStore(filepath.Join(opts.dataDir, "raft-log.bolt"))
+	logStore, err := raftboltdb.NewBoltStore(filepath.Join(opts.dataDir, "raft-log.db"))
 	if err != nil {
 		return nil, err
 	}
 
-	stableStore, err := raftboltdb.NewBoltStore(filepath.Join(opts.dataDir, "raft-stable.bolt"))
+	stableStore, err := raftboltdb.NewBoltStore(filepath.Join(opts.dataDir, "raft-stable.db"))
 	if err != nil {
 		return nil, err
 	}
+
+	fsm := NewFSM()
 
 	raftNode, err := raft.NewRaft(raftConfig, fsm, logStore, stableStore, snapshotStore, transport)
 	if err != nil {
 		return nil, err
 	}
 
+	// 启动raft
 	if opts.bootstrap {
 		configuration := raft.Configuration{
 			Servers: []raft.Server{
