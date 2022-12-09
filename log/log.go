@@ -20,6 +20,7 @@ type Config struct {
 var (
 	logger      *zap.Logger
 	sugarLogger *zap.SugaredLogger
+	raftLogger  *zap.Logger
 )
 
 func levelToZap(level string) zapcore.Level {
@@ -50,6 +51,7 @@ func Init(conf Config) {
 
 	logger = zap.New(core, zap.AddCaller(), zap.AddCallerSkip(1))
 	sugarLogger = logger.Sugar()
+	raftLogger = zap.New(core, zap.AddCaller(), zap.AddCallerSkip(4))
 }
 
 func getEncoder() zapcore.Encoder {
@@ -71,8 +73,8 @@ func getLogWriter(conf Config) zapcore.WriteSyncer {
 	return zapcore.AddSync(ws)
 }
 
-func GetStdLog() *log.Logger {
-	return zap.NewStdLog(logger)
+func GetRaftStdLog() *log.Logger {
+	return zap.NewStdLog(raftLogger)
 }
 
 func Debug(args ...interface{}) {
