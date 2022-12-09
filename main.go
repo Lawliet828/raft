@@ -6,23 +6,18 @@ import (
 	"net/http"
 )
 
-type stCached struct {
+type CachedContext struct {
 	hs   *HttpServer
 	opts *Options
 	cm   *CacheManager
 	raft *raftNodeInfo
 }
 
-type CachedContext struct {
-	*stCached
-}
-
 func main() {
-	st := &stCached{
+	ctx := &CachedContext{
 		opts: NewOptions(),
 		cm:   NewCacheManager(),
 	}
-	ctx := &CachedContext{st}
 
 	logConf := log.Config{
 		Path:    "./",
