@@ -11,11 +11,6 @@ import (
 	"github.com/hashicorp/raft"
 )
 
-const (
-	EnableWriteTrue  = int32(1)
-	EnableWriteFalse = int32(0)
-)
-
 type HttpServer struct {
 	raft        *raftNodeInfo
 	enableWrite int32
@@ -24,7 +19,7 @@ type HttpServer struct {
 func NewHttpServer(ctx *CachedContext) *HttpServer {
 	server := &HttpServer{
 		raft:        ctx.raft,
-		enableWrite: EnableWriteFalse,
+		enableWrite: 0,
 	}
 
 	http.HandleFunc("/set", server.doSet)
@@ -34,14 +29,14 @@ func NewHttpServer(ctx *CachedContext) *HttpServer {
 }
 
 func (h *HttpServer) checkPermission() bool {
-	return atomic.LoadInt32(&h.enableWrite) == EnableWriteTrue
+	return atomic.LoadInt32(&h.enableWrite) == 1
 }
 
 func (h *HttpServer) setLeaderFlag(flag bool) {
 	if flag {
-		atomic.StoreInt32(&h.enableWrite, EnableWriteTrue)
+		atomic.StoreInt32(&h.enableWrite, 1)
 	} else {
-		atomic.StoreInt32(&h.enableWrite, EnableWriteFalse)
+		atomic.StoreInt32(&h.enableWrite, 0)
 	}
 }
 
@@ -51,7 +46,7 @@ func (h *HttpServer) doGet(w http.ResponseWriter, r *http.Request) {
 	key := vars.Get("key")
 	if key == "" {
 		log.Error("doGet() error, get nil key")
-		fmt.Fprint(w, "")
+		fmt.Fprint(w, "error key\n")
 		return
 	}
 
@@ -62,7 +57,7 @@ func (h *HttpServer) doGet(w http.ResponseWriter, r *http.Request) {
 // doSet saves data to cache, only raft master node provides this api
 func (h *HttpServer) doSet(w http.ResponseWriter, r *http.Request) {
 	if !h.checkPermission() {
-		fmt.Fprint(w, "write method not allowed\n")
+		fmt.Fprint(w, "not leader\n")
 		return
 	}
 	vars := r.URL.Query()
@@ -84,7 +79,7 @@ func (h *HttpServer) doSet(w http.ResponseWriter, r *http.Request) {
 	}
 
 	applyFuture := h.raft.raft.Apply(eventBytes, 5*time.Second)
-	if err := applyFuture.Error(); err != nil {
+	if err = applyFuture.Error(); err != nil {
 		log.Errorf("raft.Apply failed:%v", err)
 		fmt.Fprint(w, "internal error\n")
 		return
