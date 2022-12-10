@@ -25,7 +25,7 @@ func newRaftNode(opts *Options) (*raftNodeInfo, error) {
 	raftConfig := raft.DefaultConfig()
 	raftConfig.LocalID = raft.ServerID(opts.raftTCPAddress)
 	// https://github.com/hashicorp/go-hclog/issues/45
-	raftConfig.Logger = hclog.FromStandardLogger(log.GetRaftStdLog(), &hclog.LoggerOptions{Name: "raft"})
+	raftConfig.Logger = hclog.FromStandardLogger(log.GetRaftStdLog(), &hclog.LoggerOptions{Level: hclog.Debug})
 	raftConfig.SnapshotInterval = 20 * time.Second
 	raftConfig.SnapshotThreshold = 2
 	leaderNotifyCh := make(chan bool, 1)
